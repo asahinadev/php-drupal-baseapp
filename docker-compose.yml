@@ -1,0 +1,53 @@
+version: "3"
+
+services: 
+
+    db:
+        build: ./db
+
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE:      drupal
+            MYSQL_USER:          drupal
+            MYSQL_PASSWORD:      drupal
+
+#       volumes:
+#           - /var/lib/mysql
+
+        ports: 
+            - 3306:3306
+            - 33060:33060
+
+    adminer:
+        build: ./adminer
+
+        depends_on: 
+            - db
+        ports: 
+            - 9102:8080
+    
+    web:
+        build: ./web
+
+        volumes: 
+            - ./app/:/var/www/html/
+            - ./web/default.conf:/etc/nginx/conf.d/default.conf
+
+        ports: 
+            - 9100:80
+
+        depends_on: 
+            - fpm
+    
+    fpm:
+        build: ./fpm
+
+        environment:
+            DATABASE_URL: null
+
+        volumes: 
+            - ./app/:/var/www/html/
+
+        depends_on: 
+            - db
+    
